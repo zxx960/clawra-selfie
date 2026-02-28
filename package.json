@@ -4,7 +4,6 @@
   "description": "Add selfie superpowers to your OpenClaw agent using xAI Grok Imagine",
   "files": [
     "skill/",
-    "templates/",
     "SKILL.md"
   ],
   "keywords": [
