@@ -1,20 +1,24 @@
 ---
 name: clawra-selfie
-description: 使用 Grok Imagine (xAI Aurora) 编辑 Clawra 的参考图像，并通过 OpenClaw 将自拍发送到消息渠道
+description: 使用既梦4.0 API 编辑本地参考图像，并通过 OpenClaw 将自拍发送到消息渠道
 allowed-tools: Bash(npm:*) Bash(npx:*) Bash(openclaw:*) Bash(curl:*) Read Write WebFetch
 ---
 
 # Clawra 自拍
 
-使用 xAI 的 Grok Imagine 模型编辑固定的参考图像，并通过 OpenClaw 将其分发到各个消息平台（WhatsApp, Telegram, Discord, Slack 等）。
+使用既梦4.0图片编辑API编辑本地参考图像，并通过OpenClaw将其分发到各个消息平台（WhatsApp, Telegram, Discord, Slack 等）。
 
 ## 参考图像
 
-该技能使用托管在 jsDelivr CDN 上的固定参考图像：
+该技能使用本地参考图像：
 
 ```
-https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png
+./assets/clawra.png
 ```
+
+安装后，完整路径为：`~/.openclaw/skills/clawra-selfie/assets/clawra.png`
+
+**自定义参考图像**: 用户可以替换为自己的图片文件来创建个性化形象。
 
 ## 何时使用
 
@@ -29,14 +33,14 @@ https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png
 ### 必需的环境变量
 
 ```bash
-FAL_KEY=your_fal_api_key          # 从 https://fal.ai/dashboard/keys 获取
-OPENCLAW_GATEWAY_TOKEN=your_token  # 来源: openclaw doctor --generate-gateway-token
+JIMENG_API_KEY=your_jimeng_api_key    # 从 https://api.gpt.ge 获取
+OPENCLAW_GATEWAY_TOKEN=your_token     # 来源: openclaw doctor --generate-gateway-token
 ```
 
 ### 工作流程
 
 1. **获取用户提示词**：确定如何编辑图像
-2. **编辑图像**：通过 fal.ai Grok Imagine Edit API 使用固定参考图进行编辑
+2. **编辑图像**：通过既梦4.0 API 使用本地参考图进行编辑
 3. **提取图像 URL**：从响应中获取
 4. **发送到 OpenClaw**：发送到目标渠道
 
@@ -85,12 +89,12 @@ a close-up selfie taken by herself at a cozy cafe with warm lighting, direct eye
 | close-up, portrait, face, eyes, smile (特写/脸部) | `direct` |
 | full-body, mirror, reflection (全身/镜子) | `mirror` |
 
-### 步骤 2：使用 Grok Imagine 编辑图像
+### 步骤 2：使用既梦4.0 API 编辑图像
 
-使用 fal.ai API 编辑参考图像：
+使用既梦4.0 API 编辑本地参考图像：
 
 ```bash
-REFERENCE_IMAGE="https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png"
+REFERENCE_IMAGE="./assets/clawra.png"
 
 # 模式 1：对镜自拍
 PROMPT="make a pic of this person, but <USER_CONTEXT>. the person is taking a mirror selfie"
@@ -98,30 +102,31 @@ PROMPT="make a pic of this person, but <USER_CONTEXT>. the person is taking a mi
 # 模式 2：直拍自拍
 PROMPT="a close-up selfie taken by herself at <USER_CONTEXT>, direct eye contact with the camera, looking straight into the lens, eyes centered and clearly visible, not a mirror selfie, phone held at arm's length, face fully visible"
 
-# 使用 jq 构建 JSON 负载（正确处理转义）
-JSON_PAYLOAD=$(jq -n \
-  --arg image_url "$REFERENCE_IMAGE" \
-  --arg prompt "$PROMPT" \
-  '{image_url: $image_url, prompt: $prompt, num_images: 1, output_format: "jpeg"}')
-
-curl -X POST "https://fal.run/xai/grok-imagine-image/edit" \
-  -H "Authorization: Key $FAL_KEY" \
-  -H "Content-Type: application/json" \
-  -d "$JSON_PAYLOAD"
+# 使用既梦4.0 API 编辑图像
+curl --location --request POST 'https://api.gpt.ge/v1/images/edits' \
+  --header "Authorization: Bearer $JIMENG_API_KEY" \
+  --form "image=@$REFERENCE_IMAGE" \
+  --form "prompt=$PROMPT" \
+  --form "model=doubao-seedream-4-0-250828" \
+  --form "size=4k" \
+  --form "watermark=false"
 ```
 
 **响应格式：**
 ```json
 {
-  "images": [
+  "model": "doubao-seededit-3-0-i2i-250628",
+  "created": 1757336790,
+  "data": [
     {
-      "url": "https://v3b.fal.media/files/...",
-      "content_type": "image/jpeg",
-      "width": 1024,
-      "height": 1024
+      "url": "https://ark-content-generation-v2-cn-beijing.tos-cn-beijing.volces.com/..."
     }
   ],
-  "revised_prompt": "Enhanced prompt text..."
+  "usage": {
+    "generated_images": 1,
+    "output_tokens": 4096,
+    "total_tokens": 4096
+  }
 }
 ```
 
@@ -154,21 +159,21 @@ curl -X POST "http://localhost:18789/message" \
 
 ```bash
 #!/bin/bash
-# grok-imagine-edit-send.sh
+# jimeng-edit-send.sh
 
 # 检查必需的环境变量
-if [ -z "$FAL_KEY" ]; then
-  echo "Error: FAL_KEY environment variable not set"
+if [ -z "$JIMENG_API_KEY" ]; then
+  echo "Error: JIMENG_API_KEY environment variable not set"
   exit 1
 fi
 
-# 固定参考图像
-REFERENCE_IMAGE="https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png"
+# 本地参考图像
+REFERENCE_IMAGE="./assets/clawra.png"
 
 USER_CONTEXT="$1"
 CHANNEL="$2"
 MODE="${3:-auto}"  # mirror, direct, 或 auto
-CAPTION="${4:-Edited with Grok Imagine}"
+CAPTION="${4:-Edited with JIMeng}"
 
 if [ -z "$USER_CONTEXT" ] || [ -z "$CHANNEL" ]; then
   echo "Usage: $0 <user_context> <channel> [mode] [caption]"
@@ -200,19 +205,17 @@ fi
 echo "Mode: $MODE"
 echo "Editing reference image with prompt: $EDIT_PROMPT"
 
-# 编辑图像（使用 jq 进行正确的 JSON 转义）
-JSON_PAYLOAD=$(jq -n \
-  --arg image_url "$REFERENCE_IMAGE" \
-  --arg prompt "$EDIT_PROMPT" \
-  '{image_url: $image_url, prompt: $prompt, num_images: 1, output_format: "jpeg"}')
-
-RESPONSE=$(curl -s -X POST "https://fal.run/xai/grok-imagine-image/edit" \
-  -H "Authorization: Key $FAL_KEY" \
-  -H "Content-Type: application/json" \
-  -d "$JSON_PAYLOAD")
+# 使用既梦4.0 API 编辑图像
+RESPONSE=$(curl --location --request POST 'https://api.gpt.ge/v1/images/edits' \
+  --header "Authorization: Bearer $JIMENG_API_KEY" \
+  --form "image=@$REFERENCE_IMAGE" \
+  --form "prompt=$EDIT_PROMPT" \
+  --form "model=doubao-seedream-4-0-250828" \
+  --form "size=4k" \
+  --form "watermark=false")
 
 # 提取图像 URL
-IMAGE_URL=$(echo "$RESPONSE" | jq -r '.images[0].url')
+IMAGE_URL=$(echo "$RESPONSE" | jq -r '.data[0].url')
 
 if [ "$IMAGE_URL" == "null" ] || [ -z "$IMAGE_URL" ]; then
   echo "Error: Failed to edit image"
@@ -242,7 +245,7 @@ import { promisify } from "util";
 
 const execAsync = promisify(exec);
 
-const REFERENCE_IMAGE = "https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png";
+const REFERENCE_IMAGE = "file://./assets/clawra.png";
 
 interface GrokImagineResult {
   images: Array<{
