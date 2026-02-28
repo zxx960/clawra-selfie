@@ -3,8 +3,7 @@
   "version": "1.1.1",
   "description": "Add selfie superpowers to your OpenClaw agent using JIMeng 4.0 API with local reference images",
   "files": [
-    "skill/",
-    "SKILL.md"
+    "skill/"
   ],
   "keywords": [
     "openclaw",
@@ -29,7 +28,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@fal-ai/client": "^1.2.0",
+    "form-data": "^4.0.0",
     "@types/node": "^22.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.0"
