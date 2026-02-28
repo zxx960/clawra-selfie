@@ -133,7 +133,6 @@ https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png
 clawra/
 ├── skill/
 │   ├── SKILL.md         # 技能定义
-│   ├── scripts/         # 生成脚本
 │   └── assets/          # 参考图像
 ├── package.json
 └── README.md
