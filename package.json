@@ -5,8 +5,7 @@
   "files": [
     "skill/",
     "templates/",
-    "SKILL.md",
-    "assets/"
+    "SKILL.md"
   ],
   "keywords": [
     "openclaw",
