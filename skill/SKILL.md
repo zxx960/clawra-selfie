@@ -239,22 +239,26 @@ echo "Done!"
 ## Node.js/TypeScript 实现
 
 ```typescript
-import { fal } from "@fal-ai/client";
 import { exec } from "child_process";
 import { promisify } from "util";
+import * as fs from 'fs';
+import * as FormData from 'form-data';
 
 const execAsync = promisify(exec);
 
-const REFERENCE_IMAGE = "file://./assets/clawra.png";
+const REFERENCE_IMAGE = "./assets/clawra.png";
 
-interface GrokImagineResult {
-  images: Array<{
+interface JIMengResult {
+  model: string;
+  created: number;
+  data: Array<{
     url: string;
-    content_type: string;
-    width: number;
-    height: number;
   }>;
-  revised_prompt?: string;
+  usage: {
+    generated_images: number;
+    output_tokens: number;
+    total_tokens: number;
+  };
 }
 
 type SelfieMode = "mirror" | "direct" | "auto";
@@ -281,10 +285,10 @@ async function editAndSend(
   mode: SelfieMode = "auto",
   caption?: string
 ): Promise<string> {
-  // 配置 fal.ai 客户端
-  fal.config({
-    credentials: process.env.FAL_KEY!
-  });
+  const jimengApiKey = process.env.JIMENG_API_KEY;
+  if (!jimengApiKey) {
+    throw new Error("JIMENG_API_KEY environment variable not set");
+  }
 
   // 确定模式
   const actualMode = mode === "auto" ? detectMode(userContext) : mode;
@@ -293,23 +297,38 @@ async function editAndSend(
   // 构建提示词
   const editPrompt = buildPrompt(userContext, actualMode);
 
-  // 使用 Grok Imagine 编辑参考图像
+  // 使用既梦4.0 API 编辑本地图像
   console.log(`Editing image: "${editPrompt}"`);
 
-  const result = await fal.subscribe("xai/grok-imagine-image/edit", {
-    input: {
-      image_url: REFERENCE_IMAGE,
-      prompt: editPrompt,
-      num_images: 1,
-      output_format: "jpeg"
-    }
-  }) as { data: GrokImagineResult };
+  // 创建表单数据
+  const form = new FormData();
+  form.append('image', fs.createReadStream(REFERENCE_IMAGE));
+  form.append('prompt', editPrompt);
+  form.append('model', 'doubao-seedream-4-0-250828');
+  form.append('size', '4k');
+  form.append('watermark', 'false');
 
-  const imageUrl = result.data.images[0].url;
+  const response = await fetch('https://api.gpt.ge/v1/images/edits', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${jimengApiKey}`,
+      ...form.getHeaders()
+    },
+    body: form
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`JIMeng API error: ${error}`);
+  }
+
+  const result = await response.json() as JIMengResult;
+  const imageUrl = result.data[0].url;
+  
   console.log(`Edited image URL: ${imageUrl}`);
 
   // 通过 OpenClaw 发送
-  const messageCaption = caption || `Edited with Grok Imagine`;
+  const messageCaption = caption || `Edited with JIMeng`;
 
   await execAsync(
     `openclaw message send --action send --channel "${channel}" --message "${messageCaption}" --media "${imageUrl}"`
@@ -340,7 +359,7 @@ editAndSend(
 // → Mode: direct
 // → Prompt: "a close-up selfie taken by herself at a cozy cafe with warm lighting, direct eye contact..."
 
-// 显式覆盖模式
+// 显式模式覆盖
 editAndSend("casual street style", "#fashion", "direct");
 ```
 
@@ -357,20 +376,21 @@ OpenClaw 支持发送到：
 | Signal | 电话号码 | `+1234567890` |
 | MS Teams | 渠道引用 | (各异) |
 
-## Grok Imagine 编辑参数
+## 既梦4.0 编辑参数
 
 | 参数 | 类型 | 默认值 | 描述 |
 |-----------|------|---------|-------------|
-| `image_url` | string | 必填 | 要编辑的图像 URL（本技能中固定） |
+| `image` | file | 必填 | 要编辑的本地图像文件 |
 | `prompt` | string | 必填 | 编辑指令 |
-| `num_images` | 1-4 | 1 | 生成图像数量 |
-| `output_format` | enum | "jpeg" | jpeg, png, webp |
+| `model` | string | doubao-seedream-4-0-250828 | 模型名称 |
+| `size` | string | "4k" | 图像尺寸 |
+| `watermark` | boolean | false | 是否添加水印 |
 
 ## 设置要求
 
-### 1. 安装 fal.ai 客户端（用于 Node.js）
+### 1. 安装依赖（用于 Node.js）
 ```bash
-npm install @fal-ai/client
+npm install form-data
 ```
 
 ### 2. 安装 OpenClaw CLI
@@ -391,10 +411,11 @@ openclaw gateway start
 
 ## 错误处理
 
-- **FAL_KEY 缺失**：确保在环境中设置了 API 密钥
+- **JIMENG_API_KEY 缺失**：确保在环境中设置了 API 密钥
 - **图像编辑失败**：检查提示词内容和 API 配额
 - **OpenClaw 发送失败**：验证 Gateway 是否运行以及渠道是否存在
-- **速率限制**：fal.ai 有速率限制；如有需要请实现重试逻辑
+- **本地文件不存在**：确保参考图像文件存在于正确路径
+- **网络问题**：检查与既梦4.0 API 的连接
 
 ## 提示
 
