@@ -2,19 +2,6 @@
 <img width="300"  alt="image" src="https://github.com/user-attachments/assets/41512c51-e61d-4550-b461-eed06a1b0ec8" />
 
 
-## 快速开始
-
-```bash
-npx clawra@latest
-```
-
-这将执行以下操作：
-1. 检查 OpenClaw 是否已安装
-2. 引导您获取 fal.ai API 密钥
-3. 安装技能到 `~/.openclaw/skills/clawra-selfie/`
-4. 配置 OpenClaw 以使用该技能
-5. 为您的智能体 SOUL.md 添加自拍能力
-
 ## 功能介绍
 
 Clawra Selfie 使您的 OpenClaw 智能体能够：
@@ -109,8 +96,6 @@ https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png
 
 ```
 clawra/
-├── bin/
-│   └── cli.js           # npx 安装程序
 ├── skill/
 │   ├── SKILL.md         # 技能定义
 │   ├── scripts/         # 生成脚本
