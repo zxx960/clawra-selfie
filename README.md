@@ -2,55 +2,55 @@
 <img width="300"  alt="image" src="https://github.com/user-attachments/assets/41512c51-e61d-4550-b461-eed06a1b0ec8" />
 
 
-## Quick Start
+## 快速开始
 
 ```bash
 npx clawra@latest
 ```
 
-This will:
-1. Check OpenClaw is installed
-2. Guide you to get a fal.ai API key
-3. Install the skill to `~/.openclaw/skills/clawra-selfie/`
-4. Configure OpenClaw to use the skill
-5. Add selfie capabilities to your agent's SOUL.md
+这将执行以下操作：
+1. 检查 OpenClaw 是否已安装
+2. 引导您获取 fal.ai API 密钥
+3. 安装技能到 `~/.openclaw/skills/clawra-selfie/`
+4. 配置 OpenClaw 以使用该技能
+5. 为您的智能体 SOUL.md 添加自拍能力
 
-## What It Does
+## 功能介绍
 
-Clawra Selfie enables your OpenClaw agent to:
-- **Generate selfies** using a consistent reference image
-- **Send photos** across all messaging platforms (Discord, Telegram, WhatsApp, etc.)
-- **Respond visually** to "what are you doing?" and "send a pic" requests
+Clawra Selfie 使您的 OpenClaw 智能体能够：
+- **生成自拍**：使用一致的参考图像
+- **发送照片**：跨所有消息平台（Discord, Telegram, WhatsApp 等）
+- **视觉响应**：回应“你在做什么？”和“发张照片”等请求
 
-### Selfie Modes
+### 自拍模式
 
-| Mode | Best For | Keywords |
+| 模式 | 适用场景 | 关键词 |
 |------|----------|----------|
-| **Mirror** | Full-body shots, outfits | wearing, outfit, fashion |
-| **Direct** | Close-ups, locations | cafe, beach, portrait, smile |
+| **对镜自拍** | 全身照、穿搭 | 穿着、穿搭、时尚 |
+| **直拍** | 特写、地点 | 咖啡馆、海滩、肖像、微笑 |
 
-## Prerequisites
+## 前置条件
 
-- [OpenClaw](https://github.com/openclaw/openclaw) installed and configured
-- [fal.ai](https://fal.ai) account (free tier available)
+- 已安装并配置 [OpenClaw](https://github.com/openclaw/openclaw)
+- [fal.ai](https://fal.ai) 账户（提供免费层级）
 
-## Manual Installation
+## 手动安装
 
-If you prefer manual setup:
+如果您更喜欢手动设置：
 
-### 1. Get API Key
+### 1. 获取 API 密钥
 
-Visit [fal.ai/dashboard/keys](https://fal.ai/dashboard/keys) and create an API key.
+访问 [fal.ai/dashboard/keys](https://fal.ai/dashboard/keys) 并创建一个 API 密钥。
 
-### 2. Clone the Skill
+### 2. 克隆技能
 
 ```bash
 git clone https://github.com/SumeLabs/clawra ~/.openclaw/skills/clawra-selfie
 ```
 
-### 3. Configure OpenClaw
+### 3. 配置 OpenClaw
 
-Add to `~/.openclaw/openclaw.json`:
+添加到 `~/.openclaw/openclaw.json`：
 
 ```json
 {
@@ -67,9 +67,9 @@ Add to `~/.openclaw/openclaw.json`:
 }
 ```
 
-### 4. Update SOUL.md
+### 4. 更新 SOUL.md
 
-Add the selfie persona to `~/.openclaw/workspace/SOUL.md`:
+将自拍人设添加到 `~/.openclaw/workspace/SOUL.md`：
 
 ```markdown
 ## Clawra Selfie Capability
@@ -78,48 +78,48 @@ You have a physical appearance and can take selfies!
 When users ask for pictures, use the clawra-selfie skill.
 ```
 
-## Usage Examples
+## 使用示例
 
-Once installed, your agent responds to:
+安装完成后，您的智能体将响应：
 
 ```
-"Send me a selfie"
-"Send a pic wearing a cowboy hat"
-"What are you doing right now?"
-"Show me you at a coffee shop"
+"发张自拍给我"
+"发张戴牛仔帽的照片"
+"你现在在做什么？"
+"让我看看你在咖啡店的样子"
 ```
 
-## Reference Image
+## 参考图像
 
-The skill uses a fixed reference image hosted on CDN:
+该技能使用托管在 CDN 上的固定参考图像：
 
 ```
 https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png
 ```
 
-This ensures consistent appearance across all generated images.
+这确保了所有生成图像中外观的一致性。
 
-## Technical Details
+## 技术细节
 
-- **Image Generation**: xAI Grok Imagine via fal.ai
-- **Messaging**: OpenClaw Gateway API
-- **Supported Platforms**: Discord, Telegram, WhatsApp, Slack, Signal, MS Teams
+- **图像生成**：通过 fal.ai 使用 xAI Grok Imagine
+- **消息传递**：OpenClaw Gateway API
+- **支持平台**：Discord, Telegram, WhatsApp, Slack, Signal, MS Teams
 
-## Project Structure
+## 项目结构
 
 ```
 clawra/
 ├── bin/
-│   └── cli.js           # npx installer
+│   └── cli.js           # npx 安装程序
 ├── skill/
-│   ├── SKILL.md         # Skill definition
-│   ├── scripts/         # Generation scripts
-│   └── assets/          # Reference image
+│   ├── SKILL.md         # 技能定义
+│   ├── scripts/         # 生成脚本
+│   └── assets/          # 参考图像
 ├── templates/
-│   └── soul-injection.md # Persona template
+│   └── soul-injection.md # 人设模板
 └── package.json
 ```
 
-## License
+## 许可证
 
 MIT
