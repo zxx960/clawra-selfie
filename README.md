@@ -33,7 +33,7 @@ Clawra Selfie 使您的 OpenClaw 智能体能够：
 ### 2. 克隆技能
 
 ```bash
-git clone https://github.com/SumeLabs/clawra ~/.openclaw/skills/clawra-selfie
+git clone https://github.com/zxx960/clawra-selfie.git ~/.openclaw/skills/clawra-selfie
 ```
 
 ### 3. 配置 OpenClaw

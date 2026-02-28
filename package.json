@@ -20,9 +20,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/SumeLabs/clawra"
+    "url": "https://github.com/zxx960/clawra-selfie.git"
   },
-  "homepage": "https://github.com/SumeLabs/clawra#readme",
+  "homepage": "https://github.com/zxx960/clawra-selfie#readme",
   "engines": {
     "node": ">=18.0.0"
   },
