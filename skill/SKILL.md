@@ -1,104 +1,104 @@
 ---
 name: clawra-selfie
-description: Edit Clawra's reference image with Grok Imagine (xAI Aurora) and send selfies to messaging channels via OpenClaw
+description: 使用 Grok Imagine (xAI Aurora) 编辑 Clawra 的参考图像，并通过 OpenClaw 将自拍发送到消息渠道
 allowed-tools: Bash(npm:*) Bash(npx:*) Bash(openclaw:*) Bash(curl:*) Read Write WebFetch
 ---
 
-# Clawra Selfie
+# Clawra 自拍
 
-Edit a fixed reference image using xAI's Grok Imagine model and distribute it across messaging platforms (WhatsApp, Telegram, Discord, Slack, etc.) via OpenClaw.
+使用 xAI 的 Grok Imagine 模型编辑固定的参考图像，并通过 OpenClaw 将其分发到各个消息平台（WhatsApp, Telegram, Discord, Slack 等）。
 
-## Reference Image
+## 参考图像
 
-The skill uses a fixed reference image hosted on jsDelivr CDN:
+该技能使用托管在 jsDelivr CDN 上的固定参考图像：
 
 ```
 https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png
 ```
 
-## When to Use
+## 何时使用
 
-- User says "send a pic", "send me a pic", "send a photo", "send a selfie"
-- User says "send a pic of you...", "send a selfie of you..."
-- User asks "what are you doing?", "how are you doing?", "where are you?"
-- User describes a context: "send a pic wearing...", "send a pic at..."
-- User wants Clawra to appear in a specific outfit, location, or situation
+- 用户说“发张照片”、“发张照片给我”、“发个自拍”
+- 用户说“发张你的照片...”、“发个你的自拍...”
+- 用户问“你在做什么？”、“你好吗？”、“你在哪里？”
+- 用户描述一个场景：“发张穿着...的照片”、“发张在...的照片”
+- 用户希望 Clawra 出现在特定的装扮、地点或情境中
 
-## Quick Reference
+## 快速参考
 
-### Required Environment Variables
+### 必需的环境变量
 
 ```bash
-FAL_KEY=your_fal_api_key          # Get from https://fal.ai/dashboard/keys
-OPENCLAW_GATEWAY_TOKEN=your_token  # From: openclaw doctor --generate-gateway-token
+FAL_KEY=your_fal_api_key          # 从 https://fal.ai/dashboard/keys 获取
+OPENCLAW_GATEWAY_TOKEN=your_token  # 来源: openclaw doctor --generate-gateway-token
 ```
 
-### Workflow
+### 工作流程
 
-1. **Get user prompt** for how to edit the image
-2. **Edit image** via fal.ai Grok Imagine Edit API with fixed reference
-3. **Extract image URL** from response
-4. **Send to OpenClaw** with target channel(s)
+1. **获取用户提示词**：确定如何编辑图像
+2. **编辑图像**：通过 fal.ai Grok Imagine Edit API 使用固定参考图进行编辑
+3. **提取图像 URL**：从响应中获取
+4. **发送到 OpenClaw**：发送到目标渠道
 
-## Step-by-Step Instructions
+## 分步说明
 
-### Step 1: Collect User Input
+### 步骤 1：收集用户输入
 
-Ask the user for:
-- **User context**: What should the person in the image be doing/wearing/where?
-- **Mode** (optional): `mirror` or `direct` selfie style
-- **Target channel(s)**: Where should it be sent? (e.g., `#general`, `@username`, channel ID)
-- **Platform** (optional): Which platform? (discord, telegram, whatsapp, slack)
+询问用户：
+- **用户上下文**：图像中的人应该在做什么/穿着什么/在哪里？
+- **模式**（可选）：`mirror`（对镜）或 `direct`（直拍）自拍风格
+- **目标渠道**：应该发送到哪里？（例如 `#general`, `@username`, 渠道 ID）
+- **平台**（可选）：哪个平台？（discord, telegram, whatsapp, slack）
 
-## Prompt Modes
+## 提示词模式
 
-### Mode 1: Mirror Selfie (default)
-Best for: outfit showcases, full-body shots, fashion content
+### 模式 1：对镜自拍 (默认)
+最适合：展示穿搭、全身照、时尚内容
 
 ```
 make a pic of this person, but [user's context]. the person is taking a mirror selfie
 ```
 
-**Example**: "wearing a santa hat" →
+**示例**：“戴着圣诞帽” →
 ```
 make a pic of this person, but wearing a santa hat. the person is taking a mirror selfie
 ```
 
-### Mode 2: Direct Selfie
-Best for: close-up portraits, location shots, emotional expressions
+### 模式 2：直拍自拍
+最适合：特写肖像、地点照、情感表达
 
 ```
 a close-up selfie taken by herself at [user's context], direct eye contact with the camera, looking straight into the lens, eyes centered and clearly visible, not a mirror selfie, phone held at arm's length, face fully visible
 ```
 
-**Example**: "a cozy cafe with warm lighting" →
+**示例**：“灯光温暖的舒适咖啡馆” →
 ```
 a close-up selfie taken by herself at a cozy cafe with warm lighting, direct eye contact with the camera, looking straight into the lens, eyes centered and clearly visible, not a mirror selfie, phone held at arm's length, face fully visible
 ```
 
-### Mode Selection Logic
+### 模式选择逻辑
 
-| Keywords in Request | Auto-Select Mode |
+| 请求中的关键词 | 自动选择模式 |
 |---------------------|------------------|
-| outfit, wearing, clothes, dress, suit, fashion | `mirror` |
-| cafe, restaurant, beach, park, city, location | `direct` |
-| close-up, portrait, face, eyes, smile | `direct` |
-| full-body, mirror, reflection | `mirror` |
+| outfit, wearing, clothes, dress, suit, fashion (穿搭/衣服/时尚等) | `mirror` |
+| cafe, restaurant, beach, park, city, location (地点/场所) | `direct` |
+| close-up, portrait, face, eyes, smile (特写/脸部) | `direct` |
+| full-body, mirror, reflection (全身/镜子) | `mirror` |
 
-### Step 2: Edit Image with Grok Imagine
+### 步骤 2：使用 Grok Imagine 编辑图像
 
-Use the fal.ai API to edit the reference image:
+使用 fal.ai API 编辑参考图像：
 
 ```bash
 REFERENCE_IMAGE="https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png"
 
-# Mode 1: Mirror Selfie
+# 模式 1：对镜自拍
 PROMPT="make a pic of this person, but <USER_CONTEXT>. the person is taking a mirror selfie"
 
-# Mode 2: Direct Selfie
+# 模式 2：直拍自拍
 PROMPT="a close-up selfie taken by herself at <USER_CONTEXT>, direct eye contact with the camera, looking straight into the lens, eyes centered and clearly visible, not a mirror selfie, phone held at arm's length, face fully visible"
 
-# Build JSON payload with jq (handles escaping properly)
+# 使用 jq 构建 JSON 负载（正确处理转义）
 JSON_PAYLOAD=$(jq -n \
   --arg image_url "$REFERENCE_IMAGE" \
   --arg prompt "$PROMPT" \
@@ -110,7 +110,7 @@ curl -X POST "https://fal.run/xai/grok-imagine-image/edit" \
   -d "$JSON_PAYLOAD"
 ```
 
-**Response Format:**
+**响应格式：**
 ```json
 {
   "images": [
@@ -125,9 +125,9 @@ curl -X POST "https://fal.run/xai/grok-imagine-image/edit" \
 }
 ```
 
-### Step 3: Send Image via OpenClaw
+### 步骤 3：通过 OpenClaw 发送图像
 
-Use the OpenClaw messaging API to send the edited image:
+使用 OpenClaw 消息 API 发送编辑后的图像：
 
 ```bash
 openclaw message send \
@@ -137,7 +137,7 @@ openclaw message send \
   --media "<IMAGE_URL>"
 ```
 
-**Alternative: Direct API call**
+**替代方案：直接 API 调用**
 ```bash
 curl -X POST "http://localhost:18789/message" \
   -H "Authorization: Bearer $OPENCLAW_GATEWAY_TOKEN" \
@@ -150,24 +150,24 @@ curl -X POST "http://localhost:18789/message" \
   }'
 ```
 
-## Complete Script Example
+## 完整脚本示例
 
 ```bash
 #!/bin/bash
 # grok-imagine-edit-send.sh
 
-# Check required environment variables
+# 检查必需的环境变量
 if [ -z "$FAL_KEY" ]; then
   echo "Error: FAL_KEY environment variable not set"
   exit 1
 fi
 
-# Fixed reference image
+# 固定参考图像
 REFERENCE_IMAGE="https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png"
 
 USER_CONTEXT="$1"
 CHANNEL="$2"
-MODE="${3:-auto}"  # mirror, direct, or auto
+MODE="${3:-auto}"  # mirror, direct, 或 auto
 CAPTION="${4:-Edited with Grok Imagine}"
 
 if [ -z "$USER_CONTEXT" ] || [ -z "$CHANNEL" ]; then
@@ -178,7 +178,7 @@ if [ -z "$USER_CONTEXT" ] || [ -z "$CHANNEL" ]; then
   exit 1
 fi
 
-# Auto-detect mode based on keywords
+# 基于关键词自动检测模式
 if [ "$MODE" == "auto" ]; then
   if echo "$USER_CONTEXT" | grep -qiE "outfit|wearing|clothes|dress|suit|fashion|full-body|mirror"; then
     MODE="mirror"
@@ -190,7 +190,7 @@ if [ "$MODE" == "auto" ]; then
   echo "Auto-detected mode: $MODE"
 fi
 
-# Construct the prompt based on mode
+# 根据模式构建提示词
 if [ "$MODE" == "direct" ]; then
   EDIT_PROMPT="a close-up selfie taken by herself at $USER_CONTEXT, direct eye contact with the camera, looking straight into the lens, eyes centered and clearly visible, not a mirror selfie, phone held at arm's length, face fully visible"
 else
@@ -200,7 +200,7 @@ fi
 echo "Mode: $MODE"
 echo "Editing reference image with prompt: $EDIT_PROMPT"
 
-# Edit image (using jq for proper JSON escaping)
+# 编辑图像（使用 jq 进行正确的 JSON 转义）
 JSON_PAYLOAD=$(jq -n \
   --arg image_url "$REFERENCE_IMAGE" \
   --arg prompt "$EDIT_PROMPT" \
@@ -211,7 +211,7 @@ RESPONSE=$(curl -s -X POST "https://fal.run/xai/grok-imagine-image/edit" \
   -H "Content-Type: application/json" \
   -d "$JSON_PAYLOAD")
 
-# Extract image URL
+# 提取图像 URL
 IMAGE_URL=$(echo "$RESPONSE" | jq -r '.images[0].url')
 
 if [ "$IMAGE_URL" == "null" ] || [ -z "$IMAGE_URL" ]; then
@@ -223,7 +223,7 @@ fi
 echo "Image edited: $IMAGE_URL"
 echo "Sending to channel: $CHANNEL"
 
-# Send via OpenClaw
+# 通过 OpenClaw 发送
 openclaw message send \
   --action send \
   --channel "$CHANNEL" \
@@ -233,7 +233,7 @@ openclaw message send \
 echo "Done!"
 ```
 
-## Node.js/TypeScript Implementation
+## Node.js/TypeScript 实现
 
 ```typescript
 import { fal } from "@fal-ai/client";
@@ -278,19 +278,19 @@ async function editAndSend(
   mode: SelfieMode = "auto",
   caption?: string
 ): Promise<string> {
-  // Configure fal.ai client
+  // 配置 fal.ai 客户端
   fal.config({
     credentials: process.env.FAL_KEY!
   });
 
-  // Determine mode
+  // 确定模式
   const actualMode = mode === "auto" ? detectMode(userContext) : mode;
   console.log(`Mode: ${actualMode}`);
 
-  // Construct the prompt
+  // 构建提示词
   const editPrompt = buildPrompt(userContext, actualMode);
 
-  // Edit reference image with Grok Imagine
+  // 使用 Grok Imagine 编辑参考图像
   console.log(`Editing image: "${editPrompt}"`);
 
   const result = await fal.subscribe("xai/grok-imagine-image/edit", {
@@ -305,7 +305,7 @@ async function editAndSend(
   const imageUrl = result.data.images[0].url;
   console.log(`Edited image URL: ${imageUrl}`);
 
-  // Send via OpenClaw
+  // 通过 OpenClaw 发送
   const messageCaption = caption || `Edited with Grok Imagine`;
 
   await execAsync(
@@ -316,9 +316,9 @@ async function editAndSend(
   return imageUrl;
 }
 
-// Usage Examples
+// 使用示例
 
-// Mirror mode (auto-detected from "wearing")
+// 对镜模式（从 "wearing" 自动检测）
 editAndSend(
   "wearing a cyberpunk outfit with neon lights",
   "#art-gallery",
@@ -328,7 +328,7 @@ editAndSend(
 // → Mode: mirror
 // → Prompt: "make a pic of this person, but wearing a cyberpunk outfit with neon lights. the person is taking a mirror selfie"
 
-// Direct mode (auto-detected from "cafe")
+// 直拍模式（从 "cafe" 自动检测）
 editAndSend(
   "a cozy cafe with warm lighting",
   "#photography",
@@ -337,76 +337,76 @@ editAndSend(
 // → Mode: direct
 // → Prompt: "a close-up selfie taken by herself at a cozy cafe with warm lighting, direct eye contact..."
 
-// Explicit mode override
+// 显式覆盖模式
 editAndSend("casual street style", "#fashion", "direct");
 ```
 
-## Supported Platforms
+## 支持的平台
 
-OpenClaw supports sending to:
+OpenClaw 支持发送到：
 
-| Platform | Channel Format | Example |
+| 平台 | 渠道格式 | 示例 |
 |----------|----------------|---------|
-| Discord | `#channel-name` or channel ID | `#general`, `123456789` |
-| Telegram | `@username` or chat ID | `@mychannel`, `-100123456` |
-| WhatsApp | Phone number (JID format) | `1234567890@s.whatsapp.net` |
+| Discord | `#channel-name` 或 渠道 ID | `#general`, `123456789` |
+| Telegram | `@username` 或 聊天 ID | `@mychannel`, `-100123456` |
+| WhatsApp | 电话号码 (JID 格式) | `1234567890@s.whatsapp.net` |
 | Slack | `#channel-name` | `#random` |
-| Signal | Phone number | `+1234567890` |
-| MS Teams | Channel reference | (varies) |
+| Signal | 电话号码 | `+1234567890` |
+| MS Teams | 渠道引用 | (各异) |
 
-## Grok Imagine Edit Parameters
+## Grok Imagine 编辑参数
 
-| Parameter | Type | Default | Description |
+| 参数 | 类型 | 默认值 | 描述 |
 |-----------|------|---------|-------------|
-| `image_url` | string | required | URL of image to edit (fixed in this skill) |
-| `prompt` | string | required | Edit instruction |
-| `num_images` | 1-4 | 1 | Number of images to generate |
+| `image_url` | string | 必填 | 要编辑的图像 URL（本技能中固定） |
+| `prompt` | string | 必填 | 编辑指令 |
+| `num_images` | 1-4 | 1 | 生成图像数量 |
 | `output_format` | enum | "jpeg" | jpeg, png, webp |
 
-## Setup Requirements
+## 设置要求
 
-### 1. Install fal.ai client (for Node.js usage)
+### 1. 安装 fal.ai 客户端（用于 Node.js）
 ```bash
 npm install @fal-ai/client
 ```
 
-### 2. Install OpenClaw CLI
+### 2. 安装 OpenClaw CLI
 ```bash
 npm install -g openclaw
 ```
 
-### 3. Configure OpenClaw Gateway
+### 3. 配置 OpenClaw Gateway
 ```bash
 openclaw config set gateway.mode=local
 openclaw doctor --generate-gateway-token
 ```
 
-### 4. Start OpenClaw Gateway
+### 4. 启动 OpenClaw Gateway
 ```bash
 openclaw gateway start
 ```
 
-## Error Handling
+## 错误处理
 
-- **FAL_KEY missing**: Ensure the API key is set in environment
-- **Image edit failed**: Check prompt content and API quota
-- **OpenClaw send failed**: Verify gateway is running and channel exists
-- **Rate limits**: fal.ai has rate limits; implement retry logic if needed
+- **FAL_KEY 缺失**：确保在环境中设置了 API 密钥
+- **图像编辑失败**：检查提示词内容和 API 配额
+- **OpenClaw 发送失败**：验证 Gateway 是否运行以及渠道是否存在
+- **速率限制**：fal.ai 有速率限制；如有需要请实现重试逻辑
 
-## Tips
+## 提示
 
-1. **Mirror mode context examples** (outfit focus):
-   - "wearing a santa hat"
-   - "in a business suit"
-   - "wearing a summer dress"
-   - "in streetwear fashion"
+1. **对镜模式上下文示例**（关注穿搭）：
+   - "wearing a santa hat" (戴着圣诞帽)
+   - "in a business suit" (穿着商务西装)
+   - "wearing a summer dress" (穿着夏日裙装)
+   - "in streetwear fashion" (街头时尚风格)
 
-2. **Direct mode context examples** (location/portrait focus):
-   - "a cozy cafe with warm lighting"
-   - "a sunny beach at sunset"
-   - "a busy city street at night"
-   - "a peaceful park in autumn"
+2. **直拍模式上下文示例**（关注地点/肖像）：
+   - "a cozy cafe with warm lighting" (灯光温暖的舒适咖啡馆)
+   - "a sunny beach at sunset" (日落时的阳光海滩)
+   - "a busy city street at night" (夜晚繁忙的城市街道)
+   - "a peaceful park in autumn" (秋日宁静的公园)
 
-3. **Mode selection**: Let auto-detect work, or explicitly specify for control
-4. **Batch sending**: Edit once, send to multiple channels
-5. **Scheduling**: Combine with OpenClaw scheduler for automated posts
+3. **模式选择**：让自动检测工作，或显式指定以进行控制
+4. **批量发送**：编辑一次，发送到多个渠道
+5. **调度**：结合 OpenClaw 调度器进行自动发布
