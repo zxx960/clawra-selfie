@@ -34,7 +34,6 @@ allowed-tools: Bash(npm:*) Bash(npx:*) Bash(openclaw:*) Bash(curl:*) Read Write 
 
 ```bash
 JIMENG_API_KEY=your_jimeng_api_key    # 从 https://api.gpt.ge 获取
-OPENCLAW_GATEWAY_TOKEN=your_token     # 来源: openclaw doctor --generate-gateway-token
 ```
 
 ### 工作流程
@@ -145,7 +144,6 @@ openclaw message send \
 **替代方案：直接 API 调用**
 ```bash
 curl -X POST "http://localhost:18789/message" \
-  -H "Authorization: Bearer $OPENCLAW_GATEWAY_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "action": "send",
