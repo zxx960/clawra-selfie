@@ -115,6 +115,15 @@ async function editAndSend(
   );
 
   console.log(`Sent to ${channel}`);
+  
+  // 删除本地图片文件
+  try {
+    fs.unlinkSync(localImagePath);
+    console.log(`Local image deleted: ${localImagePath}`);
+  } catch (error) {
+    console.warn(`Failed to delete local image: ${error.message}`);
+  }
+  
   return localImagePath;
 }
 

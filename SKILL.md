@@ -55,6 +55,7 @@ allowed-tools: Bash(npm:*) Bash(npx:*) Bash(openclaw:*) Bash(curl:*) Read Write 
 2. **编辑图像**：通过 ARK API 使用本地参考图进行编辑
 3. **下载图像**：将生成的图像下载到本地
 4. **发送到 OpenClaw**：发送本地图像文件到目标渠道
+5. **清理本地文件**：删除临时下载的图像文件
 
 ## 分步说明
 
@@ -120,6 +121,10 @@ openclaw message send \
   --message "<CAPTION_TEXT>" \
   --media "<LOCAL_IMAGE_PATH>"
 ```
+
+### 步骤 5：清理本地文件
+
+脚本会在发送完成后自动删除临时下载的图像文件，释放存储空间。
 
 **替代方案：直接 API 调用**
 ```bash

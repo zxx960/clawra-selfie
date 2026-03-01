@@ -24,3 +24,4 @@ node script/jimeng-edit-send.js
 - 确保 OpenClaw Gateway 正在运行
 - 脚本会自动创建 `./temp` 目录用于存储下载的图片
 - 生成的图片文件名格式：`clawra-YYYY-MM-DDTHH-MM-SS.png`
+- **图片发送后会自动删除本地文件，节省存储空间**
