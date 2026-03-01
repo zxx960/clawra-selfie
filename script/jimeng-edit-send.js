@@ -1,10 +1,12 @@
 const { exec } = require("child_process");
 const { promisify } = require("util");
 const fs = require('fs');
+const path = require('path');
 
 const execAsync = promisify(exec);
 
 const REFERENCE_IMAGE = "./assets/clawra.png";
+const OUTPUT_DIR = "./temp";
 
 function detectMode(userContext) {
   const mirrorKeywords = /outfit|wearing|clothes|dress|suit|fashion|full-body|mirror/i;
@@ -25,6 +27,28 @@ function buildPrompt(userContext, mode) {
 function imageToBase64(imagePath) {
   const imageBuffer = fs.readFileSync(imagePath);
   return imageBuffer.toString('base64');
+}
+
+function ensureOutputDir() {
+  if (!fs.existsSync(OUTPUT_DIR)) {
+    fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+  }
+}
+
+async function downloadImage(url, filename) {
+  ensureOutputDir();
+  const outputPath = path.join(OUTPUT_DIR, filename);
+  
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to download image: ${response.statusText}`);
+  }
+  
+  const buffer = await response.arrayBuffer();
+  fs.writeFileSync(outputPath, Buffer.from(buffer));
+  
+  console.log(`Image downloaded to: ${outputPath}`);
+  return outputPath;
 }
 
 async function editAndSend(
@@ -76,17 +100,22 @@ async function editAndSend(
   const result = await response.json();
   const imageUrl = result.data[0].url;
   
-  console.log(`Edited image URL: ${imageUrl}`);
+  console.log(`Generated image URL: ${imageUrl}`);
 
-  // 通过 OpenClaw 发送
+  // 下载图片到本地
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const filename = `clawra-${timestamp}.png`;
+  const localImagePath = await downloadImage(imageUrl, filename);
+
+  // 通过 OpenClaw 发送本地图片
   const messageCaption = caption || `Edited with ARK API`;
 
   await execAsync(
-    `openclaw message send --action send --channel "${channel}" --message "${messageCaption}" --media "${imageUrl}"`
+    `openclaw message send --action send --channel "${channel}" --message "${messageCaption}" --media "${localImagePath}"`
   );
 
   console.log(`Sent to ${channel}`);
-  return imageUrl;
+  return localImagePath;
 }
 
 // 使用示例
