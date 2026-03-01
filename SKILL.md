@@ -33,13 +33,13 @@ allowed-tools: Bash(npm:*) Bash(npx:*) Bash(openclaw:*) Bash(curl:*) Read Write 
 ### 必需的环境变量
 
 ```bash
-JIMENG_API_KEY=your_jimeng_api_key    # 从 https://api.gpt.ge 获取
+ARK_API_KEY=your_ark_api_key    # 从 ARK 平台获取
 ```
 
 ### 工作流程
 
 1. **获取用户提示词**：确定如何编辑图像
-2. **编辑图像**：通过既梦4.0 API 使用本地参考图进行编辑
+2. **编辑图像**：通过 ARK API 使用本地参考图进行编辑
 3. **提取图像 URL**：从响应中获取
 4. **发送到 OpenClaw**：发送到目标渠道
 
@@ -88,9 +88,9 @@ a close-up selfie taken by herself at a cozy cafe with warm lighting, direct eye
 | close-up, portrait, face, eyes, smile (特写/脸部) | `direct` |
 | full-body, mirror, reflection (全身/镜子) | `mirror` |
 
-### 步骤 2：使用既梦4.0 API 编辑图像
+### 步骤 2：使用 ARK API 编辑图像
 
-使用既梦4.0 API 编辑本地参考图像，详见 `script/jimeng-edit-send.js` 实现。
+使用 ARK API 编辑本地参考图像，详见 `script/jimeng-edit-send.js` 实现。
 
 ### 步骤 3：通过 OpenClaw 发送图像
 
@@ -135,30 +135,31 @@ OpenClaw 支持发送到：
 | Signal | 电话号码 | `+1234567890` |
 | MS Teams | 渠道引用 | (各异) |
 
-## 既梦4.0 编辑参数
+## ARK API 编辑参数
 
 | 参数 | 类型 | 默认值 | 描述 |
 |-----------|------|---------|-------------|
-| `image` | file | 必填 | 要编辑的本地图像文件 |
+| `model` | string | doubao-seedream-5-0-260128 | 模型名称 |
 | `prompt` | string | 必填 | 编辑指令 |
-| `model` | string | doubao-seedream-4-0-250828 | 模型名称 |
-| `size` | string | "4k" | 图像尺寸 |
+| `image` | string | 必填 | base64 编码的图像数据 |
+| `size` | string | "2K" | 图像尺寸 |
+| `output_format` | string | "png" | 输出格式 |
 | `watermark` | boolean | false | 是否添加水印 |
 
 ## 设置要求
 
 ### 1. 安装依赖（用于 Node.js）
 ```bash
-npm install form-data
+# 无需额外依赖，使用内置模块
 ```
 
 ## 错误处理
 
-- **JIMENG_API_KEY 缺失**：确保在环境中设置了 API 密钥
+- **ARK_API_KEY 缺失**：确保在环境中设置了 API 密钥
 - **图像编辑失败**：检查提示词内容和 API 配额
 - **OpenClaw 发送失败**：验证 Gateway 是否运行以及渠道是否存在
 - **本地文件不存在**：确保参考图像文件存在于正确路径
-- **网络问题**：检查与既梦4.0 API 的连接
+- **网络问题**：检查与 ARK API 的连接
 
 ## 提示
 

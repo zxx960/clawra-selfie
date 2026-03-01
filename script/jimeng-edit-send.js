@@ -1,7 +1,6 @@
 const { exec } = require("child_process");
 const { promisify } = require("util");
 const fs = require('fs');
-const FormData = require('form-data');
 
 const execAsync = promisify(exec);
 
@@ -23,15 +22,20 @@ function buildPrompt(userContext, mode) {
   return `make a pic of this person, but ${userContext}. the person is taking a mirror selfie`;
 }
 
+function imageToBase64(imagePath) {
+  const imageBuffer = fs.readFileSync(imagePath);
+  return imageBuffer.toString('base64');
+}
+
 async function editAndSend(
   userContext,
   channel,
   mode = "auto",
   caption
 ) {
-  const jimengApiKey = process.env.JIMENG_API_KEY;
-  if (!jimengApiKey) {
-    throw new Error("JIMENG_API_KEY environment variable not set");
+  const arkApiKey = process.env.ARK_API_KEY;
+  if (!arkApiKey) {
+    throw new Error("ARK_API_KEY environment variable not set");
   }
 
   // 确定模式
@@ -41,29 +45,32 @@ async function editAndSend(
   // 构建提示词
   const editPrompt = buildPrompt(userContext, actualMode);
 
-  // 使用既梦4.0 API 编辑本地图像
+  // 使用 ARK API 编辑本地图像
   console.log(`Editing image: "${editPrompt}"`);
 
-  // 创建表单数据
-  const form = new FormData();
-  form.append('image', fs.createReadStream(REFERENCE_IMAGE));
-  form.append('prompt', editPrompt);
-  form.append('model', 'doubao-seedream-4-0-250828');
-  form.append('size', '4k');
-  form.append('watermark', 'false');
+  // 将图像转换为 base64
+  const imageBase64 = imageToBase64(REFERENCE_IMAGE);
 
-  const response = await fetch('https://api.gpt.ge/v1/images/edits', {
+  // 调用 ARK API
+  const response = await fetch('https://ark.cn-beijing.volces.com/api/v3/images/generations', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${jimengApiKey}`,
-      ...form.getHeaders()
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${arkApiKey}`
     },
-    body: form
+    body: JSON.stringify({
+      model: "doubao-seedream-5-0-260128",
+      prompt: editPrompt,
+      image: `data:image/png;base64,${imageBase64}`,
+      size: "2K",
+      output_format: "png",
+      watermark: false
+    })
   });
 
   if (!response.ok) {
     const error = await response.text();
-    throw new Error(`JIMeng API error: ${error}`);
+    throw new Error(`ARK API error: ${error}`);
   }
 
   const result = await response.json();
@@ -72,7 +79,7 @@ async function editAndSend(
   console.log(`Edited image URL: ${imageUrl}`);
 
   // 通过 OpenClaw 发送
-  const messageCaption = caption || `Edited with JIMeng`;
+  const messageCaption = caption || `Edited with ARK API`;
 
   await execAsync(
     `openclaw message send --action send --channel "${channel}" --message "${messageCaption}" --media "${imageUrl}"`
