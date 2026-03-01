@@ -32,8 +32,21 @@ allowed-tools: Bash(npm:*) Bash(npx:*) Bash(openclaw:*) Bash(curl:*) Read Write 
 
 ### 必需的环境变量
 
-```bash
-ARK_API_KEY=your_ark_api_key    # 从 ARK 平台获取
+从 `~/.openclaw/openclaw.json` 中获取：
+
+```json
+{
+  "skills": {
+    "entries": {
+      "clawra-selfie": {
+        "enabled": true,
+        "env": {
+          "ARK_API_KEY": "your_ark_api_key_here"
+        }
+      }
+    }
+  }
+}
 ```
 
 ### 工作流程
