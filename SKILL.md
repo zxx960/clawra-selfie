@@ -1,12 +1,12 @@
 ---
 name: clawra-selfie
-description: 使用既梦4.0 API 编辑本地参考图像，并通过 OpenClaw 将自拍发送到消息渠道
+description: 使用 ARK API 编辑本地参考图像，并通过 OpenClaw 将自拍发送到消息渠道
 allowed-tools: Bash(npm:*) Bash(npx:*) Bash(openclaw:*) Bash(curl:*) Read Write WebFetch
 ---
 
 # Clawra 自拍
 
-使用既梦4.0图片编辑API编辑本地参考图像，并通过OpenClaw将其分发到各个消息平台（WhatsApp, Telegram, Discord, Slack 等）。
+使用 ARK API 编辑本地参考图像，并通过OpenClaw将其分发到各个消息平台（WhatsApp, Telegram, Discord, Slack 等）。
 
 ## 参考图像
 
@@ -40,8 +40,8 @@ ARK_API_KEY=your_ark_api_key    # 从 ARK 平台获取
 
 1. **获取用户提示词**：确定如何编辑图像
 2. **编辑图像**：通过 ARK API 使用本地参考图进行编辑
-3. **提取图像 URL**：从响应中获取
-4. **发送到 OpenClaw**：发送到目标渠道
+3. **下载图像**：将生成的图像下载到本地
+4. **发送到 OpenClaw**：发送本地图像文件到目标渠道
 
 ## 分步说明
 
@@ -92,16 +92,20 @@ a close-up selfie taken by herself at a cozy cafe with warm lighting, direct eye
 
 使用 ARK API 编辑本地参考图像，详见 `script/jimeng-edit-send.js` 实现。
 
-### 步骤 3：通过 OpenClaw 发送图像
+### 步骤 3：下载生成的图像
 
-使用 OpenClaw 消息 API 发送编辑后的图像：
+脚本会自动将 ARK API 生成的图像下载到本地 `./temp` 目录，文件名格式为 `clawra-YYYY-MM-DDTHH-MM-SS.png`。
+
+### 步骤 4：通过 OpenClaw 发送图像
+
+使用 OpenClaw 消息 API 发送本地图像文件：
 
 ```bash
 openclaw message send \
   --action send \
   --channel "<TARGET_CHANNEL>" \
   --message "<CAPTION_TEXT>" \
-  --media "<IMAGE_URL>"
+  --media "<LOCAL_IMAGE_PATH>"
 ```
 
 **替代方案：直接 API 调用**
@@ -112,7 +116,7 @@ curl -X POST "http://localhost:18789/message" \
     "action": "send",
     "channel": "<TARGET_CHANNEL>",
     "message": "<CAPTION_TEXT>",
-    "media": "<IMAGE_URL>"
+    "media": "<LOCAL_IMAGE_PATH>"
   }'
 ```
 
